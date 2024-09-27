@@ -5,6 +5,7 @@ interface UserState {
     email: string | null;
     displayName?: string | null;
     emailVerified: boolean;
+    photoURL:any;
   } | null;
   error: string | null;
   isLoading: boolean;
@@ -23,7 +24,7 @@ const authSlice = createSlice({
         state.user = null;
         state.error = null;
       },
-      LoginSuccess: (state, action : PayloadAction<{ uid: string; email: string | null; displayName?: string | null; emailVerified: boolean}>) => {
+      LoginSuccess: (state, action : PayloadAction<{ uid: string; email: string | null; displayName?: string | null; emailVerified: boolean, photoURL:any}>) => {
         state.isLoading = false;
         state.user = action.payload;
         state.error = null;

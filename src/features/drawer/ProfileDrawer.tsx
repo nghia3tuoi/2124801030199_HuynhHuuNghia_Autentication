@@ -3,21 +3,22 @@ import {
   DrawerContentScrollView,
   DrawerItem,
 } from "@react-navigation/drawer";
-import { Alert } from "react-native";
+import { Alert, View } from "react-native";
 import Colors from "../../utils/colors";
 import ProfileTabs from "../tabs/ProfileTabs";
 import useAuth from "../../hooks/useAuth";
+import { Ionicons } from "@expo/vector-icons";
 
 // Tạo Drawer content tùy chỉnh
 const CustomDrawerContent = (props: any) => {
-  const {logout,forgotPassword} = useAuth();
-  const handleLogout = async() => {
+  const { logout, forgotPassword } = useAuth();
+  const handleLogout = async () => {
     await logout();
-    props.navigation.navigate("Login"); 
+    props.navigation.navigate("Login");
   };
 
   const handleChangePassword = () => {
-    props.navigation.navigate("Login"); 
+    props.navigation.navigate("ChangePassword");
   };
 
   return (
@@ -26,15 +27,20 @@ const CustomDrawerContent = (props: any) => {
       style={{ backgroundColor: Colors.primary }}
     >
       <DrawerItem
+      icon={()=><Ionicons name="lock-closed" size={24} color={'white'}/>}
         label="Change Password"
         labelStyle={{ color: Colors.text, fontSize: 16 }}
         onPress={handleChangePassword} // Không cần điều hướng
       />
-      <DrawerItem
-        label="Logout"
-        labelStyle={{ color: Colors.text, fontSize: 16 }}
-        onPress={handleLogout} // Không cần điều hướng
-      />
+   
+       
+        <DrawerItem
+        icon={()=>  <Ionicons name="log-out-outline" size={26} color={'white'}/>}
+          label="Logout"
+          labelStyle={{ color: Colors.text, fontSize: 16 }}
+          onPress={handleLogout} // Không cần điều hướng
+        />
+
     </DrawerContentScrollView>
   );
 };

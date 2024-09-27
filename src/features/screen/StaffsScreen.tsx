@@ -6,6 +6,7 @@ import {
   FlatList,
   Image,
   ImageBackground,
+  ActivityIndicator,
 } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import Colors from "../../utils/colors";
@@ -13,11 +14,15 @@ import { useEffect, useState } from "react";
 import ModalAddUser from "../../shared/components/ModalAddUser";
 import useUser from "../../hooks/useUser";
 import ModalEditUser from "../../shared/components/ModalEditUser";
+import ModalRemoveUser from "../../shared/components/ModalRemoveUser";
+import Toast from "react-native-toast-message";
 
 export default function Staffs() {
   const { getAllUsers } = useUser();
+  const [isLoading, setIsLoading] = useState(false);
   const [isModal, setIsModal] = useState(false);
   const [isModalEdit, setIsModalEdit] = useState(false);
+  const [isModalRemove, setIsModalRemove] = useState(false);
   const [users, setUsers] = useState<any>(null);
   const [user, setUser] = useState<any>(null);
 
@@ -25,9 +30,11 @@ export default function Staffs() {
     handleGetAllUsers();
   }, []);
   const handleGetAllUsers = async () => {
+    setIsLoading(true)
     const users = await getAllUsers();
     if (users) {
       setUsers(users);
+      setIsLoading(false);
     }
   };
   const handleToggleModal = () => {
@@ -35,6 +42,10 @@ export default function Staffs() {
   };
   const handleToggleModalEdit = (item: any) => {
     setIsModalEdit(!isModalEdit);
+    setUser(item);
+  };
+  const handleToggleModalRemove = (item: any) => {
+    setIsModalRemove(!isModalRemove);
     setUser(item);
   };
 
@@ -59,7 +70,7 @@ export default function Staffs() {
         >
           <Ionicons name="pencil" size={26} color={"green"} />
         </TouchableOpacity>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => handleToggleModalRemove(item)}>
           <Ionicons name="trash" size={26} color={"red"} />
         </TouchableOpacity>
       </View>
@@ -72,6 +83,7 @@ export default function Staffs() {
         source={require("../../../assets/bg.png")}
         resizeMode="cover"
       >
+      
         <View style={{ alignItems: "center" }}>
           <Text
             style={{
@@ -106,7 +118,8 @@ export default function Staffs() {
           <Text style={styles.cell}>Position</Text>
           <Text style={styles.cell}>Action</Text>
         </View>
-        {users && (
+        {isLoading && <ActivityIndicator size={36}/>}
+        {users && !isLoading && ( 
           <FlatList
             data={users}
             renderItem={renderItem}
@@ -119,9 +132,15 @@ export default function Staffs() {
           handleGetAllUsers={handleGetAllUsers}
         />
         <ModalEditUser
-        user={user}
+          user={user}
           isModalEdit={isModalEdit}
           handleToggleModalEdit={handleToggleModalEdit}
+          handleGetAllUsers={handleGetAllUsers}
+        />
+        <ModalRemoveUser
+          user={user}
+          isModalRemove={isModalRemove}
+          handleToggleModalRemove={handleToggleModalRemove}
           handleGetAllUsers={handleGetAllUsers}
         />
       </ImageBackground>

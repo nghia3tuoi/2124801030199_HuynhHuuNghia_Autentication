@@ -1,15 +1,20 @@
 import { useState, useEffect } from "react";
 import {
+  reauthenticateWithCredential,
   createUserWithEmailAndPassword,
+  EmailAuthProvider,
   getAuth,
   onAuthStateChanged,
   sendEmailVerification,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut,
+  updatePassword,
 } from "firebase/auth";
 import { useDispatch } from "react-redux";
 import { LoginError, LoginSuccess } from "../store/authSlice";
+import Toast from "react-native-toast-message";
+
 
 const useAuth = () => {
   const auth = getAuth();
@@ -54,8 +59,9 @@ const useAuth = () => {
       );
       // Nếu đăng nhập thành công, bạn có thể truy cập thông tin người dùng
       const user = userCredential?.user;
-      const { email, emailVerified, uid, displayName } = user;
-      distpatch(LoginSuccess({ uid, email, displayName, emailVerified }));
+      const { email, emailVerified, uid, displayName,photoURL } = user;
+      console.log(user)
+      distpatch(LoginSuccess({ uid, email, displayName, emailVerified ,photoURL}));
       console.log("dang nhap than hcong");
       return user;
     } catch (err: any) {
@@ -84,20 +90,7 @@ const useAuth = () => {
       setError(err.message);
     }
   };
-  // Hàm quên mật khẩu
-  const forgotPassword = async (email: string) => {
-    const auth = getAuth(); // Lấy đối tượng auth từ Firebase
-    try {
-      await sendPasswordResetEmail(auth, email);
-      alert(
-        "Email đặt lại mật khẩu đã được gửi! Vui lòng kiểm tra hộp thư của bạn."
-      );
-    } catch (error: any) {
-      // Xử lý lỗi
-      console.error(error);
-      alert("Có lỗi xảy ra: " + error.message);
-    }
-  };
+
   const sendVerificationEmail = () => {
     const user = auth.currentUser;
     if (user) {
@@ -120,9 +113,90 @@ const useAuth = () => {
         });
     }
   };
-  const getCurrentUser = () => {
-    return auth.currentUser;
+  const changePassword = async (values: any) => {
+    const user = auth.currentUser;
+    const { currentPassword, newPassword } = values;
+    if (user) {
+      try {
+        if (!user.email) {
+          console.error("Email không hợp lệ.");
+          return false;
+        }
+        // Tạo credential để xác thực lại
+        const credential = EmailAuthProvider.credential(
+          user.email,
+          currentPassword
+        );
+        // Xác thực lại với credential
+        await reauthenticateWithCredential(auth.currentUser, credential);
+        // Nếu xác thực thành công, đổi mật khẩu
+        await updatePassword(user, newPassword);
+        Toast.show({
+          text1: "Thông báo",
+          text2: "Mật khẩu đã được thay đổi thành công!",
+          position: "top",
+          type: "success",
+          visibilityTime: 3000,
+          autoHide: true,
+        });
+        return true;
+      } catch (error: any) {
+        // Kiểm tra xem lỗi có phải do mật khẩu hiện tại không đúng không
+        if (error.code === "auth/invalid-credential") {
+          Toast.show({
+            text1: "Thông báo",
+            text2: "Mật khẩu hiện tại không đúng.",
+            position: "top",
+            type: "error",
+            visibilityTime: 3000,
+            autoHide: true,
+          });
+          return false; // Trả về false để báo lỗi
+        } else {
+          Toast.show({
+            text1: "Thông báo",
+            text2: "Có lỗi xảy ra khi đổi mật khẩu.",
+            position: "top",
+            type: "error",
+            visibilityTime: 3000,
+            autoHide: true,
+          });
+          return false; // Trả về false cho lỗi khác
+        }
+      }
+    } else {
+      console.log("Người dùng chưa đăng nhập.");
+      return false;
+    }
   };
+
+  const forgotPassword = async (email: string) => {
+    try {
+      await sendPasswordResetEmail(auth, email);
+      Toast.show({
+        text1: "Thông báo",
+        text2: "Password reset email sent successfully!",
+        position: "top",
+        type: "success",
+        visibilityTime: 3000,
+        autoHide: true,
+      });
+   
+      // Bạn có thể hiển thị thông báo thành công cho người dùng ở đây
+    } catch (error) {
+      Toast.show({
+        text1: "Thông báo",
+        text2: "Error sending password reset email!",
+        position: "top",
+        type: "error",
+        visibilityTime: 3000,
+        autoHide: true,
+      });
+      
+      // Hiển thị thông báo lỗi cho người dùng nếu cần
+    }
+  };
+
   return {
     user,
     error,
@@ -131,7 +205,9 @@ const useAuth = () => {
     logout,
     forgotPassword,
     sendVerificationEmail,
+    changePassword,
     auth,
+
   };
 };
 

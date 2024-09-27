@@ -23,9 +23,11 @@ import React, { useState } from "react";
 import useAuth from "../../hooks/useAuth";
 import ModalLogin from "../../shared/components/ModalLogin";
 import { useSelector } from "react-redux";
+import useAuth2 from "../../hooks/useAuth2";
 
 export default function Login({ navigation }: any) {
   const { login, auth } = useAuth();
+  const { promptAsync } = useAuth2();
   const user = useSelector((state: any) => state?.user);
   const error = useSelector((state: any) => state?.error);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -232,8 +234,15 @@ export default function Login({ navigation }: any) {
                       </Text>
                     )}
                     <TouchableOpacity
-                      style={{ alignSelf: "flex-end", marginBottom: 16 }}
+                      style={{ flexDirection:'row', justifyContent:'space-between',marginBottom: 16 }}
                     >
+                      <TouchableOpacity
+                        onPress={() => {
+                          return navigation.navigate('ForgotPassword')
+                        }}
+                      >
+                        <Text style={{ color: Colors.primary }}>Forgot Password</Text>
+                      </TouchableOpacity>
                       <TouchableOpacity
                         onPress={() => {
                           setValues({ email: "", password: "" });
@@ -282,15 +291,19 @@ export default function Login({ navigation }: any) {
                     flexDirection: "row",
                     justifyContent: "center",
                     alignItems: "center",
-                    gap: 20,
+                 
                   }}
                 >
-                  <TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => {
+                      promptAsync();
+                    }}
+                  >
                     <Ionicons name="logo-google" color={"red"} size={36} />
                   </TouchableOpacity>
-                  <TouchableOpacity>
+                  {/* <TouchableOpacity>
                     <Ionicons name="logo-facebook" color={"blue"} size={36} />
-                  </TouchableOpacity>
+                  </TouchableOpacity> */}
                 </View>
               </View>
             </View>

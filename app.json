@@ -1,5 +1,6 @@
 {
   "expo": {
+    "scheme": "com.googleusercontent.apps.233511515756-4dauq9qkcbfius75kfhi6ffmaot3gtvn", 
     "name": "Autentication",
     "slug": "Autentication",
     "version": "1.0.0",
@@ -12,16 +13,24 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "bundleIdentifier": "com.anonymous.Autentication"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.anonymous.Autentication"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "4305c9d4-970d-4c68-b816-ac924712dc4b"
+      }
     }
   }
 }
