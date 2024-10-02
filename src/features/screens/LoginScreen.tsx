@@ -35,10 +35,13 @@ export default function Login({ navigation }: any) {
   const [loading, setLoading] = useState(false);
   // Truy cập trực tiếp vào state
   const handleLogin = async (values: any) => {
+    setLoading(true);
     const user = await login(values.email, values.password);
+    setLoading(false);
     if (user && user?.emailVerified) {
       return navigation.navigate("ProfileDrawer");
     }
+   
     handleToggleModal();
   };
 
@@ -234,14 +237,20 @@ export default function Login({ navigation }: any) {
                       </Text>
                     )}
                     <TouchableOpacity
-                      style={{ flexDirection:'row', justifyContent:'space-between',marginBottom: 16 }}
+                      style={{
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        marginBottom: 16,
+                      }}
                     >
                       <TouchableOpacity
                         onPress={() => {
-                          return navigation.navigate('ForgotPassword')
+                          return navigation.navigate("ForgotPassword");
                         }}
                       >
-                        <Text style={{ color: Colors.primary }}>Forgot Password</Text>
+                        <Text style={{ color: Colors.primary }}>
+                          Forgot Password
+                        </Text>
                       </TouchableOpacity>
                       <TouchableOpacity
                         onPress={() => {
@@ -291,7 +300,6 @@ export default function Login({ navigation }: any) {
                     flexDirection: "row",
                     justifyContent: "center",
                     alignItems: "center",
-                 
                   }}
                 >
                   <TouchableOpacity
@@ -307,16 +315,32 @@ export default function Login({ navigation }: any) {
                 </View>
               </View>
             </View>
-            <ModalLogin
-              error={error}
-              isModal={isModal}
-              user={user}
-              onPress={handleToggleModal}
-              navigation={() => {
-                setIsModal(false);
-                return navigation.navigate("VerifiEmail");
-              }}
-            />
+            {loading && (
+              <Modal transparent={true} animationType="fade" visible={loading}>
+                <View
+                  style={{
+                    flex: 1,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: "rgba(0, 0, 0, 0.5)",
+                  }}
+                >
+                  <ActivityIndicator size={26} color={Colors.primary} />
+                </View>
+              </Modal>
+            )}
+            {!loading && (
+              <ModalLogin
+                error={error}
+                isModal={isModal}
+                user={user}
+                onPress={handleToggleModal}
+                navigation={() => {
+                  setIsModal(false);
+                  return navigation.navigate("VerifiEmail");
+                }}
+              />
+            )}
           </ImageBackground>
         </ScrollView>
       </KeyboardAvoidingView>

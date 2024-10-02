@@ -5,9 +5,10 @@ import {
 } from "@react-navigation/drawer";
 import { Alert, View } from "react-native";
 import Colors from "../../utils/colors";
-import ProfileTabs from "../tabs/ProfileTabs";
+import CommonTabs from "../tabs/CustomTabs";
 import useAuth from "../../hooks/useAuth";
 import { Ionicons } from "@expo/vector-icons";
+import VocabularysScreen from "../screens/VocabularysScreen";
 
 // Tạo Drawer content tùy chỉnh
 const CustomDrawerContent = (props: any) => {
@@ -46,7 +47,7 @@ const CustomDrawerContent = (props: any) => {
 };
 // Tạo Drawer cho HomeScreen
 const Drawer = createDrawerNavigator();
-export default function ProfileDrawer() {
+export function ProfileDrawer() {
   return (
     <Drawer.Navigator
       drawerContent={(props) => <CustomDrawerContent {...props} />}
@@ -63,7 +64,30 @@ export default function ProfileDrawer() {
           },
         }}
         name="ProfileTabs"
-        component={ProfileTabs}
+        component={CommonTabs}
+      />
+    </Drawer.Navigator>
+  );
+}
+
+export function VocabularysDrawer() {
+  return (
+    <Drawer.Navigator
+      drawerContent={(props) => <CustomDrawerContent {...props} />}
+    >
+      <Drawer.Screen
+        options={{
+          headerTitle: "",
+          headerStyle: {
+            backgroundColor: Colors.primary, // Màu cho màn hình này
+          },
+          headerTintColor: "white", // Màu văn bản trên header
+          headerTitleStyle: {
+            fontWeight: "bold",
+          },
+        }}
+        name="CommonTabs"
+        component={CommonTabs}
       />
     </Drawer.Navigator>
   );

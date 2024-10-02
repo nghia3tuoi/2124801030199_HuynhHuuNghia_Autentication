@@ -21,13 +21,14 @@ import { Formik } from "formik";
 import { useState } from "react";
 import useAuth from "../../hooks/useAuth";
 import ModalRegister from "../../shared/components/ModalRegister";
+import useAuth2 from "../../hooks/useAuth2";
 
 export default function Register({ navigation }: any) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isModal, setIsModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const { error, register } = useAuth();
-
+  const { promptAsync } = useAuth2();
   const togglePasswordVisibility = () => {
     setIsPasswordVisible(!isPasswordVisible);
   };
@@ -344,11 +345,8 @@ export default function Register({ navigation }: any) {
                     gap: 20,
                   }}
                 >
-                  <TouchableOpacity>
+                  <TouchableOpacity onPress={() => promptAsync()}>
                     <Ionicons name="logo-google" color={"red"} size={36} />
-                  </TouchableOpacity>
-                  <TouchableOpacity>
-                    <Ionicons name="logo-facebook" color={"blue"} size={36} />
                   </TouchableOpacity>
                 </View>
               </View>

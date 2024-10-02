@@ -1,22 +1,23 @@
 import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs";
 import Colors from "../../utils/colors";
-import Profile from "../screen/ProfileScreen";
+import Profile from "../screens/ProfileScreen";
 import { MaterialIcons } from "@expo/vector-icons";
-import Staffs from "../screen/StaffsScreen";
+import VocabularysScreen from "../screens/VocabularysScreen";
 
 const Tab = createMaterialBottomTabNavigator();
-export default function ProfileTabs() {
+
+export default  function CommonTabs() {
   return (
     <Tab.Navigator
-      initialRouteName="ProfileScreen"
+      initialRouteName="VocabularysScreen"
       labeled={false}
       barStyle={{ backgroundColor: Colors.header }}
       activeColor={Colors.grey}
       inactiveColor={Colors.greyDark}
     >
       <Tab.Screen
-        name="StaffScreen"
-        component={Staffs}
+        name="VocabularysScreen"
+        component={VocabularysScreen}
         options={{
           tabBarIcon: () => (
             <MaterialIcons size={26} name="list" style={{ color: "#ffae50" }} />
@@ -35,3 +36,4 @@ export default function ProfileTabs() {
     </Tab.Navigator>
   );
 }
+
