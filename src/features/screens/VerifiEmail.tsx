@@ -21,8 +21,8 @@ export default function VerifiEmail() {
         sendVerificationEmail();
       } else {
         setIsVerifi(true);
-        const { email, emailVerified, uid, displayName } = user;
-        distpatch(LoginSuccess({ uid, email, displayName, emailVerified }));
+        const { email, emailVerified, uid, displayName , photoURL} = user;
+        distpatch(LoginSuccess({ uid, email, displayName, emailVerified , photoURL}));
       }
     }
   };

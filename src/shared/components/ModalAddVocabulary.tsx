@@ -9,6 +9,7 @@ import {
   TouchableWithoutFeedback,
   Platform,
   Keyboard,
+  ActivityIndicator,
 } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import Colors from "../../utils/colors";
@@ -19,6 +20,7 @@ export default function ModalAddVocabulary({
   handleToggleModalAdd,
   handleAddVocabulary,
 }: any) {
+  const [isLoading, setIsLoading] = useState(false);
   const [front, setFront] = useState("");
   const [back, setBack] = useState("");
 
@@ -35,7 +37,8 @@ export default function ModalAddVocabulary({
           style={{ flex: 1 }}
         >
           <View style={styles.centeredView}>
-            <View style={styles.modal}>
+            {isLoading && <ActivityIndicator size={26} color={'white'}/>}
+            {!isLoading && <View style={styles.modal}>
               <View
                 style={{
                   flexDirection: "row",
@@ -83,11 +86,13 @@ export default function ModalAddVocabulary({
                 </View>
               </View>
               <TouchableOpacity
-                onPress={() => {
+                onPress={async() => {
                   if (front === "" || back === "") {
                     return;
                   };
-                  handleAddVocabulary(front, back);
+                  setIsLoading(true);
+                  await handleAddVocabulary(front, back);
+                  setIsLoading(false);
                   setFront("");
                   setBack("");
                 }}
@@ -102,7 +107,7 @@ export default function ModalAddVocabulary({
                   Save
                 </Text>
               </TouchableOpacity>
-            </View>
+            </View>}
           </View>
         </KeyboardAvoidingView>
       </TouchableWithoutFeedback>

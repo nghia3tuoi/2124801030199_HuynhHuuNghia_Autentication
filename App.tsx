@@ -35,6 +35,8 @@ export default function App() {
     <Provider store={store}>
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Register" component={RegisterScreen} />
           <Stack.Screen name="Vocabularys" component={VocabularysDrawer} />
           <Stack.Screen
             name="VocabularyDetailScreen"
@@ -48,9 +50,7 @@ export default function App() {
               headerTitle: "",
             }}
           />
-          <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="ProfileDrawer" component={ProfileDrawer} />
-          <Stack.Screen name="Register" component={RegisterScreen} />
           <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
           <Stack.Screen name="ChangePassword" component={ChangePassword} />
           <Stack.Screen name="VerifiEmail" component={VerifiEmail} />

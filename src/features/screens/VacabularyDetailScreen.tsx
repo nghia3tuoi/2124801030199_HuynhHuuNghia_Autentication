@@ -15,19 +15,82 @@ import Swiper from "react-native-swiper";
 import React, { useEffect, useRef, useState } from "react";
 import useVocabulary from "../../hooks/useVocabulary";
 import Carousel from "react-native-reanimated-carousel";
+import ModalEditVocabulary from "../../shared/components/ModalEditVocabulary";
+import ModalDeleteVocabulary from "../../shared/components/ModalDeleteVocabulary";
+import * as Speech from 'expo-speech';
 
 export default function VocabularysDetailScreen({ route }: any) {
-  const [selectedItems, setSelectedItems] = useState([]);
-  const { vocabularies } = useVocabulary();
+  const [vocabularies, setVocabularies] = useState<any>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [vocabularyCurrent, setVocabularyCurrent] = useState<any>({});
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [selectedItems, setSelectedItems] = useState<any>([]);
+  const [isModalEdit, setIsModalEdit] = useState(false);
+  const [isModalDelete, setIsModalDelete] = useState(false);
+  const [isPressed, setIsPressed] = useState<any>(false);
+
   const [flipped, setFlipped] = useState(false);
   const flipAnim = useRef(new Animated.Value(0)).current;
   const { index } = route.params; // Lấy item và index từ route
   const width = Dimensions.get("window").width;
-  const { updateVocabulary } = useVocabulary();
+  const { updateVocabulary, getVocabularies, deleteVocabulary } =
+    useVocabulary();
+
+  useEffect(() => {
+    handleGetVocabularies();
+  }, []);
+  const playSound = (word:any) => {
+    Speech.speak(word, {
+      language: 'en-US',
+      onDone: () => {
+        setIsPressed(null); // Đặt lại isPressed về false sau khi phát âm xong
+      },
+      onStopped: () => {
+        setIsPressed(null); // Đặt lại isPressed về false nếu phát âm bị dừng
+      }
+    });
+    };
+  const handleGetVocabularies = async () => {
+    const vocabularies: any = await getVocabularies(null);
+    setVocabularies(vocabularies);
+    setVocabularyCurrent(vocabularies[index]);
+  };
+  const handleUpdateStatusVocabulary = async (item: any) => {
+    handleSelectItem(item);
+    await updateVocabulary(item?.id, undefined, undefined, !item?.status);
+  };
   const handleUpdateVocabulary = async (item: any) => {
-    await updateVocabulary(item.id, undefined, undefined, !item.status);
+    await updateVocabulary(item?.id, item?.front, item?.back, undefined);
+    await handleGetVocabularies();
+    setVocabularyCurrent(item);
+    handleToggleModalEdit();
+  };
+  const handleDeleteVocabulary = async (item: any) => {
+    await deleteVocabulary(item?.id);
+    handleGetVocabularies();
+    handleToggleModalDelete();
+  };
+  const handleSelectItem = (item: any) => {
+    let updatedItems = [...selectedItems]; // Tạo một bản sao của selectedItems để không thay đổi trực tiếp mảng cũ
+
+    if (updatedItems.includes(item?.id)) {
+      // Nếu đã tồn tại, xóa item đó
+      updatedItems = updatedItems.filter((id) => id !== item?.id);
+    } else {
+      // Nếu chưa tồn tại, thêm item vào
+      updatedItems.push(item?.id);
+    }
+
+    // Cập nhật lại trạng thái
+    setSelectedItems(updatedItems);
   };
 
+  const handleToggleModalEdit = () => {
+    setIsModalEdit(!isModalEdit);
+  };
+  const handleToggleModalDelete = () => {
+    setIsModalDelete(!isModalDelete);
+  };
   const flipToFront = () => {
     Animated.timing(flipAnim, {
       toValue: 0,
@@ -74,7 +137,14 @@ export default function VocabularysDetailScreen({ route }: any) {
             defaultIndex={index}
             data={vocabularies}
             scrollAnimationDuration={1000}
-            onSnapToItem={(index) => console.log("current index:", index)}
+            onSnapToItem={(index) => {
+              if (index != null) {
+                setCurrentIndex(index);
+                const currentItem = vocabularies[index];
+                setVocabularyCurrent(currentItem);
+                setFlipped(false);
+              }
+            }}
             renderItem={({ item, index }: any) => (
               <View
                 key={index}
@@ -115,18 +185,6 @@ export default function VocabularysDetailScreen({ route }: any) {
                     </View>
                   </Animated.View>
                 </TouchableOpacity>
-
-                <TouchableOpacity
-                  onPress={() => {
-                    handleUpdateVocabulary(item);
-                  }}
-                >
-                  <Ionicons
-                    name="checkmark-circle-sharp"
-                    color={item?.status === true ? "#1e90ff" : "white"}
-                    size={32}
-                  />
-                </TouchableOpacity>
               </View>
             )}
           />
@@ -141,11 +199,32 @@ export default function VocabularysDetailScreen({ route }: any) {
               flexDirection: "row",
             }}
           >
-            <TouchableOpacity>
-              <Ionicons name="volume-high" size={36} color={"white"} />
+            <TouchableOpacity onPress={()=>{
+                setIsPressed(vocabularyCurrent?.id);
+              return playSound(vocabularyCurrent?.front)
+            }}>
+              <Ionicons name="volume-high" size={36} color={isPressed === vocabularyCurrent?.id ? "#1e90ff" : "white"} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleToggleModalEdit}>
+              <Ionicons name="pencil" size={36} color={"white"} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleToggleModalDelete}>
+              <Ionicons name="trash-bin" size={36} color={"white"} />
             </TouchableOpacity>
           </View>
         </View>
+        <ModalEditVocabulary
+          handleToggleModalEdit={handleToggleModalEdit}
+          handleUpdateVocabulary={handleUpdateVocabulary}
+          isModalEdit={isModalEdit}
+          vocabularyCurrent={vocabularyCurrent}
+        />
+        <ModalDeleteVocabulary
+          handleToggleModalDelete={handleToggleModalDelete}
+          handleDeleteVocabulary={handleDeleteVocabulary}
+          isModalDelete={isModalDelete}
+          vocabularyCurrent={vocabularyCurrent}
+        />
       </ImageBackground>
     </View>
   );

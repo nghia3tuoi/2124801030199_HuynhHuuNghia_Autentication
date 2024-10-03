@@ -12,16 +12,11 @@ import {
 } from "firebase/firestore";
 import { db } from "../config/firebaseConfig";
 import { useEffect, useState } from "react";
+import Toast from "react-native-toast-message";
 const useVocabulary = () => {
-  const [vocabularies, setVocabularies] = useState<any>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  useEffect(() => {
-    getVocabularies(null); // Hoặc truyền giá trị trạng thái bạn muốn
-  }, []);
   // Hàm lấy tất cả từ vựng
   // Hàm lấy từ vựng theo trạng thái
   const getVocabularies = async (status: boolean | null) => {
-    setIsLoading(true);
     const vocabulariesCollection = collection(db, "vocabularies");
     let q;
     try {
@@ -38,27 +33,36 @@ const useVocabulary = () => {
         id: doc.id,
         ...doc.data(),
       }));
-      setVocabularies(vocabularyList);
-      console.log("Successfully retrieved vocabularies"); // Thông báo thành công
-    } catch (error) {
-      console.error("Error fetching vocabularies:", error); // Ghi lại lỗi
-      // Bạn có thể hiển thị thông báo cho người dùng ở đây nếu cần
-    } finally {
-      setIsLoading(false);
-    }
+
+      return vocabularyList;
+    } catch (error) {}
   };
 
   const addVocabulary = async (front: string, back: string) => {
     try {
-      const docRef = await addDoc(collection(db, "vocabularies"), {
+      await addDoc(collection(db, "vocabularies"), {
         front: front,
         back: back,
         status: false,
         createdAt: serverTimestamp(), // Tạo timestamp cho trường created
       });
-      getVocabularies(null);
-    } catch (e) {
-      console.error("Error adding vocabulary: ", e);
+      Toast.show({
+        text1: 'Thông báo',
+        text2: 'Thêm từ vựng thành công!',
+        position: 'top',
+        type: 'success',
+        visibilityTime: 3000,
+        autoHide: true,
+      });
+    } catch (e:any) {
+      Toast.show({
+        text1: 'Thông báo',
+        text2: `Thêm từ vựng thất bại! ${e.message}`,
+        position: 'top',
+        type: 'error',
+        visibilityTime: 3000,
+        autoHide: true,
+      });
     }
   };
   const updateVocabulary = async (
@@ -86,9 +90,23 @@ const useVocabulary = () => {
 
     try {
       await updateDoc(vocabularyRef, updates);
-      await getVocabularies(null);
-    } catch (e) {
-      console.log(e);
+      Toast.show({
+        text1: 'Thông báo',
+        text2: 'Update vựng thành công!',
+        position: 'top',
+        type: 'success',
+        visibilityTime: 3000,
+        autoHide: true,
+      });
+    } catch (e:any) {
+      Toast.show({
+        text1: 'Thông báo',
+        text2: `Update từ vựng thất bại! ${e.message}`,
+        position: 'top',
+        type: 'error',
+        visibilityTime: 3000,
+        autoHide: true,
+      });
     }
   };
   // Hàm xóa từ vựng
@@ -96,9 +114,23 @@ const useVocabulary = () => {
     const vocabularyRef = doc(db, "vocabularies", id); // Lấy tài liệu theo ID
     try {
       await deleteDoc(vocabularyRef);
-      console.log("Vocabulary deleted successfully");
-    } catch (e) {
-      console.error("Error deleting vocabulary: ", e);
+      Toast.show({
+        text1: 'Thông báo',
+        text2: 'Delete từ vựng thành công!',
+        position: 'top',
+        type: 'success',
+        visibilityTime: 3000,
+        autoHide: true,
+      });
+    } catch (e:any) {
+      Toast.show({
+        text1: 'Thông báo',
+        text2: `Delete từ vựng thất bại! ${e.message}`,
+        position: 'top',
+        type: 'error',
+        visibilityTime: 3000,
+        autoHide: true,
+      });
     }
   };
   return {
@@ -106,8 +138,6 @@ const useVocabulary = () => {
     addVocabulary,
     updateVocabulary,
     deleteVocabulary,
-    vocabularies,
-    isLoading
   };
 };
 export default useVocabulary;

@@ -10,42 +10,72 @@ import {
 } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import Colors from "../../utils/colors";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ModalAddVocabulary from "../../shared/components/ModalAddVocabulary";
 import useVocabulary from "../../hooks/useVocabulary";
-
+import { useFocusEffect, useRoute } from "@react-navigation/native";
+import { Audio } from "expo-av";
+import * as Speech from 'expo-speech';
 export default function VocabularysScreen({ navigation }: any) {
-  const {
-    addVocabulary,
-    updateVocabulary,
-    getVocabularies,
-    vocabularies,
-    isLoading,
-  } = useVocabulary();
-
+  const { addVocabulary, updateVocabulary, getVocabularies } = useVocabulary();
+  const [vocabularies, setVocabularies] = useState<any>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isModalAdd, setIsModalAdd] = useState(false);
   const [selectTab, setSelectab] = useState("all");
+  const [isPressed, setIsPressed] = useState<any>(false);
+  const route = useRoute();
 
+  const playSound = (word:any) => {
+    Speech.speak(word, {
+      language: 'en-US',
+      onDone: () => {
+        setIsPressed(null); // Đặt lại isPressed về false sau khi phát âm xong
+      },
+      onStopped: () => {
+        setIsPressed(null); // Đặt lại isPressed về false nếu phát âm bị dừng
+      }
+    });
+    };
+  //
+  useEffect(() => {
+    handleGetVocabularies(null);
+  }, [route.params]);
+
+  useFocusEffect(
+    useCallback(() => {
+      handleGetVocabularies(null);
+      // Nếu bạn muốn dọn dẹp khi màn hình không còn focus
+      return () => {};
+    }, [])
+  );
   const handleAddVocabulary = async (front: string, back: string) => {
     await addVocabulary(front, back);
+    handleGetVocabularies(null);
     handleToggleModalAdd();
   };
 
   const handleToggleModalAdd = (): void => {
     setIsModalAdd(!isModalAdd);
   };
-  const handleSelectTab = (tabName: string): void => {
-    setSelectab(tabName);
-  };
+
   const handleUpdateVocabulary = async (item: any) => {
     await updateVocabulary(item.id, undefined, undefined, !item.status);
+    let status: any = null;
+    if (selectTab === "all") {
+      status = null;
+    } else if (selectTab === "not-learned") {
+      status = false;
+    } else {
+      status = true;
+    }
+    handleGetVocabularies(status);
   };
-  const handleGetVocabularies = async (
-    status: boolean | null,
-    tabName: string
-  ) => {
-    handleSelectTab(tabName);
-    await getVocabularies(status);
+  const handleGetVocabularies = async (status: boolean | null) => {
+    setIsLoading(true);
+
+    const vocabularies = await getVocabularies(status);
+    setVocabularies(vocabularies);
+    setIsLoading(false);
   };
   const renderItem = ({ item, index }: { item: any; index: number }) => (
     <TouchableOpacity
@@ -66,8 +96,11 @@ export default function VocabularysScreen({ navigation }: any) {
           <Text style={{ color: "grey", fontSize: 18 }}>{item?.back}</Text>
         </View>
         <View style={{ flexDirection: "row", gap: 15 }}>
-          <TouchableOpacity>
-            <Ionicons name="volume-high" color={"white"} size={32} />
+          <TouchableOpacity onPress={() => {
+            setIsPressed(item?.id);
+            return playSound(item?.front);
+          }}>
+            <Ionicons name="volume-high" color={isPressed === item?.id ? "#1e90ff" : "white"} size={32} />
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
@@ -95,7 +128,8 @@ export default function VocabularysScreen({ navigation }: any) {
           <TouchableOpacity
             disabled={selectTab === "all"}
             onPress={() => {
-              return handleGetVocabularies(null, "all");
+              setSelectab("all");
+              return handleGetVocabularies(null);
             }}
             style={{
               backgroundColor: "grey",
@@ -119,7 +153,8 @@ export default function VocabularysScreen({ navigation }: any) {
           <TouchableOpacity
             disabled={selectTab === "not-learned"}
             onPress={() => {
-              return handleGetVocabularies(false, "not-learned");
+              setSelectab("not-learned");
+              return handleGetVocabularies(false);
             }}
             style={{ backgroundColor: "grey", padding: 2 }}
           >
@@ -139,7 +174,8 @@ export default function VocabularysScreen({ navigation }: any) {
           <TouchableOpacity
             disabled={selectTab === "learned"}
             onPress={() => {
-              return handleGetVocabularies(true, "learned");
+              setSelectab("learned");
+              return handleGetVocabularies(true);
             }}
             style={{
               backgroundColor: "grey",
@@ -196,6 +232,7 @@ export default function VocabularysScreen({ navigation }: any) {
             {isLoading && <ActivityIndicator size={26} />}
             {!isLoading && (
               <FlatList
+                style={{ marginBottom: 120 }}
                 data={vocabularies}
                 renderItem={renderItem}
                 keyExtractor={(item: any) => item.id}
@@ -238,6 +275,7 @@ export default function VocabularysScreen({ navigation }: any) {
             {isLoading && <ActivityIndicator size={26} />}
             {!isLoading && (
               <FlatList
+                style={{ marginBottom: 120 }}
                 data={vocabularies}
                 renderItem={renderItem}
                 keyExtractor={(item: any) => item.id}
@@ -280,6 +318,7 @@ export default function VocabularysScreen({ navigation }: any) {
             {isLoading && <ActivityIndicator size={26} />}
             {!isLoading && (
               <FlatList
+                style={{ marginBottom: 120 }}
                 data={vocabularies}
                 renderItem={renderItem}
                 keyExtractor={(item: any) => item.id}
